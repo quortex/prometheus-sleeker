@@ -1,0 +1,11 @@
+{
+    "metrics": [
+        {
+            "base": "my_existing_base_metric",
+            "name": "the_generated_metric",
+            "description": "any description",
+            "aggregation_labels": ["my_label_a", "my_label_b"],
+            "aggregation_operation": "sum"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+.vscode
+.idea
+*.pyc
+htmlcov
+.coverage
+.env
+config.json
