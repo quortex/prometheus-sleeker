@@ -88,10 +88,12 @@ class Process:
                         increment = vnp - vn if vnp >= vn else vnp
                         base_counter_incr += increment
 
-                logger.debug(
-                    f"Catchup: {counter_value} + {base_counter_incr} for {metric.config.name}{pretty_labels(labels)}"
-                )
-                metric.counter.labels(**labels).inc(counter_value + base_counter_incr)
+                    logger.debug(
+                        f"Catchup: {counter_value} + {base_counter_incr} for {metric.config.name}{pretty_labels(labels)}"
+                    )
+                    metric.counter.labels(**labels).inc(
+                        counter_value + base_counter_incr
+                    )
 
             # If the base counter was not found, start the output counter where it was last time it was
             # seen
