@@ -6,3 +6,4 @@ pip-tools
 pre-commit
 pytest-asyncio
 pytest-cov
+pytest-httpx
