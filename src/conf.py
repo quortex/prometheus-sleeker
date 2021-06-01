@@ -3,7 +3,7 @@ import json
 import logging
 import logging.config
 
-from .metric import MetricConfig, Metrics
+from .metric import Metrics
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def load_config_file(config_file):
 
     result = []
     for element in conf["metrics"]:
-        result.append(Metrics(MetricConfig(**element)))
+        result.append(Metrics(**element))
 
     return result
 

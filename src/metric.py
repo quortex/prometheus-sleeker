@@ -1,13 +1,22 @@
 from prometheus_client import Counter
 
 
-class MetricConfig:
+class Metrics:
     def __init__(self, **kwargs) -> None:
+
+        # Configuration
         self.base = kwargs["base"]
         self.name = kwargs["name"]
         self.description = kwargs["description"]
         self.aggregation_labels = kwargs["aggregation_labels"]
         self.aggregation_operation = kwargs["aggregation_operation"]
+
+        # Prometheus client
+        self.counter = Counter(self.name, self.description, self.aggregation_labels)
+
+        # Store the last values seen in the base counter, to compute the
+        # increment when we read the counter again.
+        self.previous_values_by_key = {}
 
     def get_query(self):
         by_clause = ", ".join(self.aggregation_labels)
@@ -23,16 +32,3 @@ class MetricConfig:
         return {
             label: key[index] for index, label in enumerate(self.aggregation_labels)
         }
-
-
-class Metrics:
-    def __init__(self, metric_config: MetricConfig) -> None:
-        self.config = metric_config
-        self.counter = Counter(
-            metric_config.name,
-            metric_config.description,
-            metric_config.aggregation_labels,
-        )
-        # Store the last values seen in the base counter, to compute the
-        # increment when we read the counter again.
-        self.previous_values_by_key = {}

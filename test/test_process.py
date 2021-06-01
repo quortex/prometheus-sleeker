@@ -1,7 +1,7 @@
 import pytest
 from prometheus_client import REGISTRY
 
-from src.metric import MetricConfig, Metrics
+from src.metric import Metrics
 from src.process import Process
 
 
@@ -48,14 +48,14 @@ async def test_load_when_base_counter_is_still_present(httpx_mock):
     ]
     httpx_mock.add_response(json=mocked_prom_reply(data_2))
 
-    metric_config = MetricConfig(
+    metric = Metrics(
         base="base_metric_1",
         name="output_metric_1",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
     )
-    process = Process([Metrics(metric_config)])
+    process = Process([metric])
 
     t = 100015
     await process.load(t)
@@ -85,14 +85,14 @@ async def test_load_when_base_counter_is_no_longer_present(httpx_mock):
     data_2 = []
     httpx_mock.add_response(json=mocked_prom_reply(data_2))
 
-    metric_config = MetricConfig(
+    metric = Metrics(
         base="base_metric_2",
         name="output_metric_2",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
     )
-    process = Process([Metrics(metric_config)])
+    process = Process([metric])
 
     t = 100015
     await process.load(t)
@@ -119,14 +119,14 @@ async def test_tick_when_output_metric_does_not_exist_yet(httpx_mock):
     ]
     httpx_mock.add_response(json=mocked_prom_reply(data))
 
-    metric_config = MetricConfig(
+    metric = Metrics(
         base="base_metric_3",
         name="output_metric_3",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
     )
-    process = Process([Metrics(metric_config)])
+    process = Process([metric])
 
     t = 100015
     await process.tick(t)

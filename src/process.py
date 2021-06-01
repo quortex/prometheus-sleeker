@@ -24,7 +24,7 @@ async def load_metric(metric: Metrics, timestamp):
 
     query = (
         "query_range?query="
-        + metric.config.get_recatch_query()
+        + metric.get_recatch_query()
         + f"&start={start}&end={timestamp}&step=5s"
     )
     data = await prom.fetch(query)
@@ -33,7 +33,7 @@ async def load_metric(metric: Metrics, timestamp):
     recatch_dots_by_key = {}
 
     for element in data:
-        labels = metric.config.filter_labels(element["metric"])
+        labels = metric.filter_labels(element["metric"])
         key = tuple(labels.values())
 
         last_dot = element["values"][-1]
@@ -41,21 +41,19 @@ async def load_metric(metric: Metrics, timestamp):
         # Convert counter value from str to int
         last_dot = last_dot[0], int(last_dot[1])
 
-        logger.debug(
-            f"Found dot {last_dot} for {metric.config.name}{pretty_labels(labels)}"
-        )
+        logger.debug(f"Found dot {last_dot} for {metric.name}{pretty_labels(labels)}")
         recatch_dots_by_key[key] = last_dot
 
     # Fetch the base counters
 
     query = (
         "query_range?query="
-        + metric.config.get_query()
+        + metric.get_query()
         + f"&start={start}&end={timestamp}&step=5s"
     )
     data = await prom.fetch(query)
     for element in data:
-        labels = metric.config.filter_labels(element["metric"])
+        labels = metric.filter_labels(element["metric"])
         key = tuple(labels.values())
 
         values = element["values"]
@@ -80,7 +78,7 @@ async def load_metric(metric: Metrics, timestamp):
                 base_counter_incr += increment
 
             logger.debug(
-                f"Catchup: {counter_value} + {base_counter_incr} for {metric.config.name}{pretty_labels(labels)}"
+                f"Catchup: {counter_value} + {base_counter_incr} for {metric.name}{pretty_labels(labels)}"
             )
             metric.counter.labels(**labels).inc(counter_value + base_counter_incr)
 
@@ -89,26 +87,24 @@ async def load_metric(metric: Metrics, timestamp):
 
     for key, dot in recatch_dots_by_key.items():
         _timestamp, counter_value = dot
-        labels = metric.config.key_to_label(key)
+        labels = metric.key_to_label(key)
         logger.warning(
-            f"No base counter found for {metric.config.base}{pretty_labels(labels)}, base counter catchup failed."
+            f"No base counter found for {metric.base}{pretty_labels(labels)}, base counter catchup failed."
         )
         metric.counter.labels(**labels).inc(counter_value)
 
 
 async def tick_metric(metric, timestamp):
-    query = "query?query=" + metric.config.get_query() + f"&time={timestamp}"
+    query = "query?query=" + metric.get_query() + f"&time={timestamp}"
     data = await prom.fetch(query)
     for element in data:
-        labels = metric.config.filter_labels(element["metric"])
+        labels = metric.filter_labels(element["metric"])
         key = tuple(labels.values())
 
         value = element["value"]
 
         if not value:
-            logger.warning(
-                f"No base value for {metric.config.base}{pretty_labels(labels)}"
-            )
+            logger.warning(f"No base value for {metric.base}{pretty_labels(labels)}")
             continue
 
         _t, v = value
@@ -120,12 +116,12 @@ async def tick_metric(metric, timestamp):
             if incr < 0:
                 # Counter has reset
                 logger.info(
-                    f"Reset found on counter {metric.config.base}{pretty_labels(labels)}"
+                    f"Reset found on counter {metric.base}{pretty_labels(labels)}"
                 )
                 incr = v
         else:
             logger.info(
-                f"New labels found: {metric.config.base}{pretty_labels(labels)}. Starting counter at {v}"
+                f"New labels found: {metric.base}{pretty_labels(labels)}. Starting counter at {v}"
             )
             incr = v
 
