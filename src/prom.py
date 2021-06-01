@@ -1,7 +1,7 @@
 import logging
 
-from decouple import config
 import httpx
+from decouple import config
 
 PROMETHEUS_URL = config("PROMETHEUS_URL", "localhost")
 PROMETHEUS_PORT = config("PROMETHEUS_PORT", "9090")

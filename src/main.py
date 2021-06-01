@@ -10,7 +10,6 @@ from .conf import configure
 from .process import Process
 from .prom import PrometheusException
 
-
 METRIC_PORT = 6200
 REFRESH_INTERVAL = 5  # seconds
 STOP_EVENT = Event()
@@ -48,7 +47,6 @@ async def main():
     wait_time = REFRESH_INTERVAL
 
     while not STOP_EVENT.wait(timeout=wait_time):
-
         try:
             await process.tick(int(time_target))
         except PrometheusException as exc:

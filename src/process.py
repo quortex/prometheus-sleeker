@@ -2,9 +2,8 @@ import asyncio
 import logging
 from typing import List
 
-from .metric import Metrics
 from . import prom
-
+from .metric import Metrics
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
 import argparse
+import json
 import logging
 import logging.config
-import json
 
-
-from .metric import Metrics, MetricConfig
+from .metric import MetricConfig, Metrics
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ def load_config_file(config_file):
 
     result = []
     for element in conf["metrics"]:
-        result.append(Metrics(MetricConfig.load(element)))
+        result.append(Metrics(MetricConfig(**element)))
 
     return result
 

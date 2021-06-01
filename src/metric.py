@@ -1,25 +1,13 @@
-from dataclasses import dataclass
-from typing import List
 from prometheus_client import Counter
 
 
-@dataclass
 class MetricConfig:
-    base: str
-    name: str
-    description: str
-    aggregation_labels: List[str]
-    aggregation_operation: str
-
-    @staticmethod
-    def load(conf: dict):
-        return MetricConfig(
-            conf["base"],
-            conf["name"],
-            conf["description"],
-            conf["aggregation_labels"],
-            conf["aggregation_operation"],
-        )
+    def __init__(self, **kwargs) -> None:
+        self.base = kwargs["base"]
+        self.name = kwargs["name"]
+        self.description = kwargs["description"]
+        self.aggregation_labels = kwargs["aggregation_labels"]
+        self.aggregation_operation = kwargs["aggregation_operation"]
 
     def get_query(self):
         by_clause = ", ".join(self.aggregation_labels)

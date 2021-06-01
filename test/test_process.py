@@ -49,7 +49,11 @@ async def test_load_when_base_counter_is_still_present(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data_2))
 
     metric_config = MetricConfig(
-        "base_metric_1", "output_metric_1", "Lorem ipsum", ["a", "b"], "sum"
+        base="base_metric_1",
+        name="output_metric_1",
+        description="Lorem ipsum",
+        aggregation_labels=["a", "b"],
+        aggregation_operation="sum",
     )
     process = Process([Metrics(metric_config)])
 
@@ -82,7 +86,11 @@ async def test_load_when_base_counter_is_no_longer_present(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data_2))
 
     metric_config = MetricConfig(
-        "base_metric_2", "output_metric_2", "Lorem ipsum", ["a", "b"], "sum"
+        base="base_metric_2",
+        name="output_metric_2",
+        description="Lorem ipsum",
+        aggregation_labels=["a", "b"],
+        aggregation_operation="sum",
     )
     process = Process([Metrics(metric_config)])
 
@@ -112,7 +120,11 @@ async def test_tick_when_output_metric_does_not_exist_yet(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data))
 
     metric_config = MetricConfig(
-        "base_metric_3", "output_metric_3", "Lorem ipsum", ["a", "b"], "sum"
+        base="base_metric_3",
+        name="output_metric_3",
+        description="Lorem ipsum",
+        aggregation_labels=["a", "b"],
+        aggregation_operation="sum",
     )
     process = Process([Metrics(metric_config)])
 
