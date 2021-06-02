@@ -16,6 +16,14 @@ def pretty_labels(labels):
 
 
 async def load_metric(metric: Metrics, timestamp):
+    """
+        Fetch Prometheus metrics (input and output) to compute the starting values of the output
+        metrics. The prometheus_client Counter is not incremented here because this function is
+        called in parallel for every metrics, and some calls may fail, in which case the whole
+        loading operation can be performed again.
+    """
+    result = []
+
     # Max 11000 points (Prometheus limit), with 5s resolution, we can fetch 15 hours of data
     start = timestamp - 54000  # 15 hours before
 
@@ -80,7 +88,9 @@ async def load_metric(metric: Metrics, timestamp):
             logger.debug(
                 f"Catchup: {counter_value} + {base_counter_incr} for {metric.name}{pretty_labels(labels)}"
             )
-            metric.counter.labels(**labels).inc(counter_value + base_counter_incr)
+            result.append(
+                (metric.counter.labels(**labels), counter_value + base_counter_incr)
+            )
 
     # If the base counter was not found, start the output counter where it was last time it was
     # seen
@@ -91,7 +101,9 @@ async def load_metric(metric: Metrics, timestamp):
         logger.warning(
             f"No base counter found for {metric.base}{pretty_labels(labels)}, base counter catchup failed."
         )
-        metric.counter.labels(**labels).inc(counter_value)
+        result.append((metric.counter.labels(**labels), counter_value))
+
+    return result
 
 
 async def tick_metric(metric, timestamp):
@@ -136,7 +148,14 @@ class Process:
 
     async def load(self, timestamp):
         task_list = [load_metric(metric, timestamp) for metric in self.metrics]
-        await asyncio.gather(*task_list)
+        task_results = await asyncio.gather(*task_list)
+
+        # Here, all Prometheus operations are done succesufully. We can now set the counters
+        # initial values
+
+        for task_result in task_results:
+            for counter, initial_value in task_result:
+                counter.inc(initial_value)
 
     async def tick(self, timestamp):
         task_list = [tick_metric(metric, timestamp) for metric in self.metrics]
