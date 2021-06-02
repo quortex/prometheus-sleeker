@@ -22,7 +22,7 @@ async def fetch(query: str,) -> dict:
     try:
         async with httpx.AsyncClient() as client:
             reply = await client.get(url)
-    except httpx.ConnectError as exc:
+    except httpx.RequestError as exc:
         raise PrometheusException("Unable to contact the Prometheus server") from exc
 
     if reply.status_code != 200:
