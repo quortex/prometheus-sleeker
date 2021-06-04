@@ -22,6 +22,13 @@ class Metrics:
         by_clause = ", ".join(self.aggregation_labels)
         return f"{self.aggregation_operation} by ({by_clause})({self.base})"
 
+    def get_liveness_query(self, ttl: str):
+        """
+            To check the existance of a key
+        """
+        by_clause = ", ".join(self.aggregation_labels)
+        return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.base}[{ttl}]))"
+
     def get_recatch_query(self):
         return f"{self.name}_total"
 

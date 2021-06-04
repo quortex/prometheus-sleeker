@@ -4,6 +4,7 @@ import logging
 import logging.config
 
 from .metric import Metrics
+from .options import Options
 
 logger = logging.getLogger(__name__)
 
@@ -11,17 +12,17 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONFIGURATION_FILE = "config.json"
 
 
-def load_config_file(config_file):
+def load_config_file(config_file) -> dict:
 
     with open(config_file, "r") as f:
         conf = json.load(f)
     logger.debug(conf)
 
-    result = []
+    metrics = []
     for element in conf["metrics"]:
-        result.append(Metrics(**element))
+        metrics.append(Metrics(**element))
 
-    return result
+    return {"options": Options(**conf.get("options", {})), "metrics": metrics}
 
 
 def configure_logger(log_level):
@@ -47,7 +48,7 @@ def configure_logger(log_level):
     )
 
 
-def configure():
+def configure() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", help="json configuration file")
     parser.add_argument(

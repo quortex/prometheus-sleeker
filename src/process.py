@@ -4,6 +4,7 @@ from typing import List
 
 from . import prom
 from .metric import Metrics
+from .options import Options
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ def pretty_labels(labels):
     return "{" + ",".join([f'{key}="{value}"' for key, value in labels.items()]) + "}"
 
 
-async def load_metric(metric: Metrics, timestamp):
+async def load_metric(metric: Metrics, timestamp, options: Options):
     """
         Fetch Prometheus metrics (input and output) to compute the starting values of the output
         metrics. The prometheus_client Counter is not incremented here because this function is
@@ -25,7 +26,8 @@ async def load_metric(metric: Metrics, timestamp):
     result = []
 
     # Max 11000 points (Prometheus limit), with 5s resolution, we can fetch 15 hours of data
-    start = timestamp - 54000  # 15 hours before
+    fine_duration_s = 54000
+    start = timestamp - fine_duration_s  # 15 hours before
 
     # Get the last available value of the output metric. We are interested in the value, to start our counter at this value,
     # and the timestamp, because we will have to catch up the base counter increments from this time, until now.
@@ -52,7 +54,7 @@ async def load_metric(metric: Metrics, timestamp):
         logger.debug(f"Found dot {last_dot} for {metric.name}{pretty_labels(labels)}")
         recatch_dots_by_key[key] = last_dot
 
-    # Fetch the base counters
+    # Fine tuned query to compute input increments
 
     query = (
         "query_range?query="
@@ -60,8 +62,9 @@ async def load_metric(metric: Metrics, timestamp):
         + f"&start={start}&end={timestamp}&step=5s"
     )
     data = await prom.fetch(query)
+
     for element in data:
-        labels = metric.filter_labels(element["metric"])
+        labels = element["metric"]
         key = tuple(labels.values())
 
         values = element["values"]
@@ -92,16 +95,33 @@ async def load_metric(metric: Metrics, timestamp):
                 (metric.counter.labels(**labels), counter_value + base_counter_incr)
             )
 
-    # If the base counter was not found, start the output counter where it was last time it was
-    # seen
+    if recatch_dots_by_key:
+        # Some output values do not have the matching input value within the
+        # fine tuned interval. Check if the input value has existed during a
+        # longer (ttl) period.
 
-    for key, dot in recatch_dots_by_key.items():
-        _timestamp, counter_value = dot
-        labels = metric.key_to_label(key)
-        logger.warning(
-            f"No base counter found for {metric.base}{pretty_labels(labels)}, base counter catchup failed."
-        )
-        result.append((metric.counter.labels(**labels), counter_value))
+        existing_keys = set()
+        query = "query?query=" + metric.get_liveness_query(options.ttl)
+        data = await prom.fetch(query)
+        for element in data:
+            labels = element["metric"]
+            key = tuple(labels.values())
+            existing_keys.add(key)
+
+        for key, dot in recatch_dots_by_key.items():
+            _timestamp, counter_value = dot
+            labels = metric.key_to_label(key)
+            if key in existing_keys:
+                # The input metrics has lived during the ttl, keep the output metrics where we have seen it
+                logger.warning(
+                    f"No input found for {metric.base}{pretty_labels(labels)} in previous {fine_duration_s}s, catchup failed."
+                )
+                result.append((metric.counter.labels(**labels), counter_value))
+            else:
+                # Forget the output metrics
+                logger.warning(
+                    f"No input found for {metric.base}{pretty_labels(labels)} in previous {options.ttl}, metric removed."
+                )
 
     return result
 
@@ -143,14 +163,17 @@ async def tick_metric(metric, timestamp):
 
 
 class Process:
-    def __init__(self, metrics: List[Metrics]):
-        self.metrics = metrics
+    def __init__(self, config):
+        self.metrics: List[Metrics] = config["metrics"]
+        self.options: Options = config["options"]
 
     async def load(self, timestamp):
-        task_list = [load_metric(metric, timestamp) for metric in self.metrics]
+        task_list = [
+            load_metric(metric, timestamp, self.options) for metric in self.metrics
+        ]
         task_results = await asyncio.gather(*task_list)
 
-        # Here, all Prometheus operations are done succesufully. We can now set the counters
+        # Here, all Prometheus operations are done successfully. We can now set the counters
         # initial values
 
         for task_result in task_results:

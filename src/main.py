@@ -26,10 +26,10 @@ async def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    metrics = configure()
+    config = configure()
     start_http_server(port=METRIC_PORT)
 
-    process = Process(metrics)
+    process = Process(config)
 
     while not STOP_EVENT.is_set():
         try:
