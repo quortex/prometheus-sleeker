@@ -11,6 +11,9 @@ class Metrics:
         self.aggregation_labels = kwargs["aggregation_labels"]
         self.aggregation_operation = kwargs["aggregation_operation"]
 
+        if not self.output.endswith("_total"):
+            self.output += "_total"
+
         # Prometheus client
         self.counter = Counter(self.output, self.description, self.aggregation_labels)
 
@@ -30,7 +33,7 @@ class Metrics:
         return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.input}[{ttl}]))"
 
     def get_recatch_query(self):
-        return f"{self.output}_total"
+        return self.output
 
     def filter_labels(self, labels):
         return {label: labels[label] for label in self.aggregation_labels}
