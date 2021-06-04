@@ -7,9 +7,9 @@ class Metrics:
         # Configuration
         self.input = kwargs["input"]
         self.output = kwargs["output"]
-        self.description = kwargs["description"]
+        self.description = kwargs.get("description", f"Sleeked from {kwargs['input']}")
         self.aggregation_labels = kwargs["aggregation_labels"]
-        self.aggregation_operation = kwargs["aggregation_operation"]
+        self.aggregation_operation = kwargs.get("aggregation_operation", "sum")
 
         if not self.output.endswith("_total"):
             self.output += "_total"
