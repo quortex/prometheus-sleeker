@@ -143,7 +143,7 @@ async def tick_metric(metric, timestamp):
         v = int(v)
 
         previous_value = metric.previous_values_by_key.get(key)
-        if previous_value:
+        if previous_value is not None:
             incr = v - previous_value
             if incr < 0:
                 # Counter has reset
