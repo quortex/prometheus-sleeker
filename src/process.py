@@ -30,7 +30,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
     start = timestamp - fine_duration_s  # 15 hours before
 
     # Get the last available value of the output metric. We are interested in the value, to start our counter at this value,
-    # and the timestamp, because we will have to catch up the base counter increments from this time, until now.
+    # and the timestamp, because we will have to catch up the input counter increments from this time, until now.
 
     query = (
         "query_range?query="
@@ -51,7 +51,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         # Convert counter value from str to int
         last_dot = last_dot[0], int(last_dot[1])
 
-        logger.debug(f"Found dot {last_dot} for {metric.name}{pretty_labels(labels)}")
+        logger.debug(f"Found dot {last_dot} for {metric.output}{pretty_labels(labels)}")
         recatch_dots_by_key[key] = last_dot
 
     # Fine tuned query to compute input increments
@@ -71,7 +71,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
 
         if key in recatch_dots_by_key:
 
-            # Store the last seen base counter
+            # Store the last seen input counter
             metric.previous_values_by_key[key] = int(values[-1][1])
 
             # Remove the current metric from recatch_dots_by_key.
@@ -80,19 +80,19 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
             # Keep only the values seen during the sleeker unavailability
             catchup_values = [[t, v] for [t, v] in values if t >= last_timestamp]
 
-            base_counter_incr = 0
+            input_counter_incr = 0
             for i in range(len(catchup_values) - 1):
                 tn, vn = catchup_values[i]
                 tnp, vnp = catchup_values[i + 1]
                 vn, vnp, tn, tnp = int(vn), int(vnp), float(tn), float(tnp)
                 increment = vnp - vn if vnp >= vn else vnp
-                base_counter_incr += increment
+                input_counter_incr += increment
 
             logger.debug(
-                f"Catchup: {counter_value} + {base_counter_incr} for {metric.name}{pretty_labels(labels)}"
+                f"Catchup: {counter_value} + {input_counter_incr} for {metric.output}{pretty_labels(labels)}"
             )
             result.append(
-                (metric.counter.labels(**labels), counter_value + base_counter_incr)
+                (metric.counter.labels(**labels), counter_value + input_counter_incr)
             )
 
     if recatch_dots_by_key:
@@ -114,13 +114,13 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
             if key in existing_keys:
                 # The input metrics has lived during the ttl, keep the output metrics where we have seen it
                 logger.warning(
-                    f"No input found for {metric.base}{pretty_labels(labels)} in previous {fine_duration_s}s, catchup failed."
+                    f"No input found for {metric.input}{pretty_labels(labels)} in previous {fine_duration_s}s, catchup failed."
                 )
                 result.append((metric.counter.labels(**labels), counter_value))
             else:
                 # Forget the output metrics
                 logger.warning(
-                    f"No input found for {metric.base}{pretty_labels(labels)} in previous {options.ttl}, metric removed."
+                    f"No input found for {metric.input}{pretty_labels(labels)} in previous {options.ttl}, metric removed."
                 )
 
     return result
@@ -136,7 +136,7 @@ async def tick_metric(metric, timestamp):
         value = element["value"]
 
         if not value:
-            logger.warning(f"No base value for {metric.base}{pretty_labels(labels)}")
+            logger.warning(f"No value for {metric.input}{pretty_labels(labels)}")
             continue
 
         _t, v = value
@@ -148,12 +148,12 @@ async def tick_metric(metric, timestamp):
             if incr < 0:
                 # Counter has reset
                 logger.info(
-                    f"Reset found on counter {metric.base}{pretty_labels(labels)}"
+                    f"Reset found on counter {metric.input}{pretty_labels(labels)}"
                 )
                 incr = v
         else:
             logger.info(
-                f"New labels found: {metric.base}{pretty_labels(labels)}. Starting counter at {v}"
+                f"New labels found: {metric.input}{pretty_labels(labels)}. Starting counter at {v}"
             )
             incr = v
 

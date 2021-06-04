@@ -45,8 +45,8 @@ async def test_load_when_input_counter_is_still_present(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data_2))
 
     metric = Metrics(
-        base="base_metric_1",
-        name="output_metric_1",
+        input="input_metric_1",
+        output="output_metric_1",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
@@ -89,8 +89,8 @@ async def test_load_when_input_counter_is_no_longer_present_in_short_term(httpx_
     httpx_mock.add_response(json=mocked_prom_reply(data_3))
 
     metric = Metrics(
-        base="base_metric_2",
-        name="output_metric_2",
+        input="input_metric_2",
+        output="output_metric_2",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
@@ -133,8 +133,8 @@ async def test_load_when_input_counter_is_no_longer_present_in_ttl(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data_3))
 
     metric = Metrics(
-        base="base_metric_3",
-        name="output_metric_3",
+        input="input_metric_3",
+        output="output_metric_3",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",
@@ -159,8 +159,8 @@ async def test_tick_when_output_metric_does_not_exist_yet(httpx_mock):
     httpx_mock.add_response(json=mocked_prom_reply(data))
 
     metric = Metrics(
-        base="base_metric_4",
-        name="output_metric_4",
+        input="input_metric_4",
+        output="output_metric_4",
         description="Lorem ipsum",
         aggregation_labels=["a", "b"],
         aggregation_operation="sum",

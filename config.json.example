@@ -1,8 +1,8 @@
 {
     "metrics": [
         {
-            "base": "my_existing_base_metric",
-            "name": "the_generated_metric",
+            "input": "my_existing_input_metric",
+            "output": "the_generated_output_metric",
             "description": "any description",
             "aggregation_labels": ["my_label_a", "my_label_b"],
             "aggregation_operation": "sum"

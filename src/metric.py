@@ -5,32 +5,32 @@ class Metrics:
     def __init__(self, **kwargs) -> None:
 
         # Configuration
-        self.base = kwargs["base"]
-        self.name = kwargs["name"]
+        self.input = kwargs["input"]
+        self.output = kwargs["output"]
         self.description = kwargs["description"]
         self.aggregation_labels = kwargs["aggregation_labels"]
         self.aggregation_operation = kwargs["aggregation_operation"]
 
         # Prometheus client
-        self.counter = Counter(self.name, self.description, self.aggregation_labels)
+        self.counter = Counter(self.output, self.description, self.aggregation_labels)
 
-        # Store the last values seen in the base counter, to compute the
+        # Store the last values seen in the input counter, to compute the
         # increment when we read the counter again.
         self.previous_values_by_key = {}
 
     def get_query(self):
         by_clause = ", ".join(self.aggregation_labels)
-        return f"{self.aggregation_operation} by ({by_clause})({self.base})"
+        return f"{self.aggregation_operation} by ({by_clause})({self.input})"
 
     def get_liveness_query(self, ttl: str):
         """
             To check the existance of a key
         """
         by_clause = ", ".join(self.aggregation_labels)
-        return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.base}[{ttl}]))"
+        return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.input}[{ttl}]))"
 
     def get_recatch_query(self):
-        return f"{self.name}_total"
+        return f"{self.output}_total"
 
     def filter_labels(self, labels):
         return {label: labels[label] for label in self.aggregation_labels}
