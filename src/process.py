@@ -114,13 +114,13 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
             if key in existing_keys:
                 # The input metrics has lived during the ttl, keep the output metrics where we have seen it
                 logger.warning(
-                    f"No input found for {metric.input}{pretty_labels(labels)} in previous {fine_duration_s}s, catchup failed."
+                    f"No value found for {metric.input}{pretty_labels(labels)} during previous {fine_duration_s}s, but found in last {options.ttl}."
                 )
                 result.append((metric.counter.labels(**labels), counter_value))
             else:
                 # Forget the output metrics
                 logger.warning(
-                    f"No input found for {metric.input}{pretty_labels(labels)} in previous {options.ttl}, metric removed."
+                    f"No value found for {metric.input}{pretty_labels(labels)} during previous {options.ttl}, metric removed."
                 )
 
     return result
