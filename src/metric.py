@@ -8,6 +8,7 @@ class Metrics:
         self.input = kwargs["input"]
         self.output = kwargs["output"]
         self.description = kwargs.get("description", f"Sleeked from {kwargs['input']}")
+        self.filters = kwargs.get("filters", [])
         self.aggregation_labels = kwargs["aggregation_labels"]
         self.aggregation_operation = kwargs.get("aggregation_operation", "sum")
 
@@ -23,14 +24,22 @@ class Metrics:
 
     def get_query(self):
         by_clause = ", ".join(self.aggregation_labels)
-        return f"{self.aggregation_operation} by ({by_clause})({self.input})"
+        filter_str = ""
+        if self.filters:
+            filter_str = "{" + ",".join(self.filters) + "}"
+        return (
+            f"{self.aggregation_operation} by ({by_clause})({self.input}{filter_str})"
+        )
 
     def get_liveness_query(self, ttl: str):
         """
             To check the existance of a key
         """
         by_clause = ", ".join(self.aggregation_labels)
-        return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.input}[{ttl}]))"
+        filter_str = ""
+        if self.filters:
+            filter_str = "{" + ",".join(self.filters) + "}"
+        return f"{self.aggregation_operation} by ({by_clause})(max_over_time({self.input}{filter_str}[{ttl}]))"
 
     def get_recatch_query(self):
         return self.output
