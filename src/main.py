@@ -31,6 +31,7 @@ async def main():
 
     process = Process(config)
 
+    retry_time = 5
     while not STOP_EVENT.is_set():
         try:
             now = time.time()
@@ -38,7 +39,9 @@ async def main():
             break
         except PrometheusException as exc:
             logger.error(exc)
-            await asyncio.sleep(2)
+            logger.error(f"Retrying in {retry_time} seconds...")
+            await asyncio.sleep(retry_time)
+            retry_time += 5
 
     logger.info("Loading done")
 
