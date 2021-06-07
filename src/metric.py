@@ -7,7 +7,7 @@ class Metrics:
         # Configuration
         self.input = kwargs["input"]
         self.output = kwargs["output"]
-        self.description = kwargs.get("description", f"Sleeked from {kwargs['input']}")
+
         self.filtering = kwargs.get("filtering")
         self.aggregation_labels = kwargs["aggregation_labels"]
         self.aggregation_operation = kwargs.get("aggregation_operation", "sum")
@@ -15,12 +15,20 @@ class Metrics:
         if not self.output.endswith("_total"):
             self.output += "_total"
 
+        self.description = kwargs.get("description", self.default_description())
+
         # Prometheus client
         self.counter = Counter(self.output, self.description, self.aggregation_labels)
 
         # Store the last values seen in the input counter, to compute the
         # increment when we read the counter again.
         self.previous_values_by_key = {}
+
+    def default_description(self) -> str:
+        filtering_str = ""
+        if self.filtering:
+            filtering_str = "{" + self.filtering + "}"
+        return f"Sleeked from {self.aggregation_operation}({self.input}{filtering_str})"
 
     def get_query(self):
         by_clause = ", ".join(self.aggregation_labels)
