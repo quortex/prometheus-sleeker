@@ -108,3 +108,5 @@ The configuration file must be a json object containing the following parameters
 
         How to aggregate input counters sharing the same key (see aggregation_labels).
         Default to "sum".
+
+[logo]: https://storage.googleapis.com/quortex-assets/logo.webp

@@ -1,0 +1,57 @@
+# Build and push Docker image to docker hub
+
+name: Build
+
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  build-and-push:
+    name: BuildAndPush
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: prometheus-sleeker
+      GCP_PROJECT_ID: quortex-registry-public
+
+    steps:
+      # This step uses Github's checkout-action: https://github.com/actions/checkout
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Deduced the appropriate tag for the image (inspired by the docker action https://github.com/actions-hub/docker)
+      - name: Set env
+        run: |
+          IMAGE_TAG=${TAG} && \
+          if [[ -z "${IMAGE_TAG}" ]]; then \
+            IMAGE_TAG=${GITHUB_REF#*/}; \
+            IMAGE_TAG=${IMAGE_TAG#*/}; \
+            IMAGE_TAG=$(echo $IMAGE_TAG | sed -e "s#^v##"); \
+            if [[ "$IMAGE_TAG" == "master" || "$IMAGE_TAG" == "main" ]]; then \
+              IMAGE_TAG=latest; \
+            fi \
+          fi && \
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+      # Setup gcloud CLI
+      - uses: google-github-actions/setup-gcloud@v0.2.1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      # Build docker image
+      - name: Build
+        run: |-
+          docker build -t eu.gcr.io/${{ env.GCP_PROJECT_ID }}/$IMAGE_NAME:$IMAGE_TAG .
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - run: |
+          gcloud auth configure-docker -q
+      # Push image to Google Container Registry
+      - name: Push
+        run: |-
+          docker push eu.gcr.io/${{ env.GCP_PROJECT_ID }}/$IMAGE_NAME:$IMAGE_TAG
