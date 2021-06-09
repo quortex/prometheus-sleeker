@@ -55,3 +55,14 @@ tolerations: []
 affinity: {}
 
 sleekerConfig: {}
+
+# Additional backend container environment variables
+# 
+# A key/value map, where the value is a map, defining either the "value" or
+# "valueFrom" field.
+#
+# Example:
+# extraEnv:
+#   CONFIGURATION_PATH:
+#     value: "/some/value"
+extraEnv: {}
