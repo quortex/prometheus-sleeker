@@ -1,9 +1,0 @@
-{
-    "metrics": [
-        {
-            "input": "my_existing_input_metric",
-            "output": "the_generated_output_metric",
-            "aggregation_labels": ["my_label_a", "my_label_b"]
-        }
-    ]
-}

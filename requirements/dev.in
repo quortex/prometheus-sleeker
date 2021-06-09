@@ -1,9 +1,0 @@
--r prod.txt
-
-black==19.10b0
-coverage
-pip-tools
-pre-commit
-pytest-asyncio
-pytest-cov
-pytest-httpx
