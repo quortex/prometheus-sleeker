@@ -47,7 +47,8 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: sleeker-config
-              mountPath: /etc/sleeker
+              mountPath: /etc/sleeker/config.json
+              subPath: sleeker-config.json
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -64,6 +65,3 @@ spec:
         - name: sleeker-config
           configMap:
             name: {{ include "prometheus-sleeker.fullname" . }}
-            items:
-              - key: sleeker-config.json
-                path: config.json
