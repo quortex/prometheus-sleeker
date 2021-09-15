@@ -51,7 +51,11 @@ class Metrics:
         return self.output
 
     def filter_labels(self, labels):
-        return {label: labels[label] for label in self.aggregation_labels}
+        labels_filtered = {}
+        for label in self.aggregation_labels:
+            if label in labels:
+                labels_filtered[label] = labels[label]
+        return labels_filtered
 
     def key_to_label(self, key: tuple):
         return {
