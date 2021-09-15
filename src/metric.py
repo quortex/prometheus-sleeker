@@ -55,6 +55,8 @@ class Metrics:
         for label in self.aggregation_labels:
             if label in labels:
                 labels_filtered[label] = labels[label]
+            else:
+                labels_filtered[label] = ""
         return labels_filtered
 
     def key_to_label(self, key: tuple):
