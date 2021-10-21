@@ -140,7 +140,7 @@ async def tick_metric(metric, timestamp):
             continue
 
         _t, v = value
-        v = int(v)
+        v = float(v)
 
         previous_value = metric.previous_values_by_key.get(key)
         if previous_value is not None:
