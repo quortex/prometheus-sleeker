@@ -49,7 +49,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         last_dot = element["values"][-1]
 
         # Convert counter value from str to int
-        last_dot = last_dot[0], int(last_dot[1])
+        last_dot = last_dot[0], float(last_dot[1])
 
         logger.debug(f"Found dot {last_dot} for {metric.output}{pretty_labels(labels)}")
         recatch_dots_by_key[key] = last_dot
@@ -72,7 +72,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         if key in recatch_dots_by_key:
 
             # Store the last seen input counter
-            metric.previous_values_by_key[key] = int(values[-1][1])
+            metric.previous_values_by_key[key] = float(values[-1][1])
 
             # Remove the current metric from recatch_dots_by_key.
             last_timestamp, counter_value = recatch_dots_by_key.pop(key)
@@ -84,7 +84,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
             for i in range(len(catchup_values) - 1):
                 tn, vn = catchup_values[i]
                 tnp, vnp = catchup_values[i + 1]
-                vn, vnp, tn, tnp = int(vn), int(vnp), float(tn), float(tnp)
+                vn, vnp, tn, tnp = float(vn), float(vnp), float(tn), float(tnp)
                 increment = vnp - vn if vnp >= vn else vnp
                 input_counter_incr += increment
 
