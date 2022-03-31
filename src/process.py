@@ -18,16 +18,19 @@ def pretty_labels(labels):
 
 async def load_metric(metric: Metrics, timestamp, options: Options):
     """
-        Fetch Prometheus metrics (input and output) to compute the starting values of the output
-        metrics. The prometheus_client Counter is not incremented here because this function is
-        called in parallel for every metrics, and some calls may fail, in which case the whole
-        loading operation can be performed again.
+    Fetch Prometheus metrics (input and output) to compute the starting values of the output
+    metrics. The prometheus_client Counter is not incremented here because this function is
+    called in parallel for every metrics, and some calls may fail, in which case the whole
+    loading operation can be performed again.
     """
     result = []
 
     # Max 11000 points (Prometheus limit), with 5s resolution, we can fetch 15 hours of data
-    fine_duration_s = 54000
-    start = timestamp - fine_duration_s  # 15 hours before
+    # EDIT 1: Increase the resolution to 15 seconds as it is the scrape_interval configured in
+    # prometheus
+    # EDIT 2: For performance reasons, we only fetch 6 hours of data
+    fine_duration_s = 21600
+    start = timestamp - fine_duration_s  # now minus the window duration
 
     # Get the last available value of the output metric. We are interested in the value, to start our counter at this value,
     # and the timestamp, because we will have to catch up the input counter increments from this time, until now.
@@ -35,7 +38,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
     query = (
         "query_range?query="
         + metric.get_recatch_query()
-        + f"&start={start}&end={timestamp}&step=5s"
+        + f"&start={start}&end={timestamp}&step=15s"
     )
     data = await prom.fetch(query)
 
@@ -59,7 +62,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
     query = (
         "query_range?query="
         + metric.get_query()
-        + f"&start={start}&end={timestamp}&step=5s"
+        + f"&start={start}&end={timestamp}&step=15s"
     )
     data = await prom.fetch(query)
 

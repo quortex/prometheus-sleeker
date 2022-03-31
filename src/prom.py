@@ -18,12 +18,13 @@ logger = logging.getLogger(__name__)
 
 async def fetch(query: str,) -> dict:
     url = PROM_URL + query
-
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=20.0) as client:
             reply = await client.get(url)
     except httpx.RequestError as exc:
-        raise PrometheusException("Unable to contact the Prometheus server") from exc
+        raise PrometheusException(
+            "Unable to contact the Prometheus server", exc
+        ) from exc
 
     if reply.status_code != 200:
         logger.error(f"Invalid status code {reply.status_code}")

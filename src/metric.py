@@ -39,7 +39,7 @@ class Metrics:
 
     def get_liveness_query(self, ttl: str):
         """
-            To check the existance of a key
+        To check the existance of a key
         """
         by_clause = ", ".join(self.aggregation_labels)
         filtering_str = ""
