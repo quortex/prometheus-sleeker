@@ -149,11 +149,10 @@ async def tick_metric(metric, timestamp):
         if previous_value is not None:
             incr = v - previous_value
             if incr < 0:
-                # Counter has reset
                 logger.info(
-                    f"Reset found on counter {metric.input}{pretty_labels(labels)}"
+                    f"Decrease found on metric {metric.input}{pretty_labels(labels)}"
                 )
-                incr = v
+                incr = 0
         else:
             logger.info(
                 f"New labels found: {metric.input}{pretty_labels(labels)}. Starting counter at {v}"
