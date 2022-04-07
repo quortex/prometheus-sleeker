@@ -2,6 +2,7 @@ import asyncio
 import logging
 import signal
 import time
+import sys
 from threading import Event
 
 from prometheus_client import start_http_server
@@ -32,6 +33,7 @@ async def main():
     process = Process(config)
 
     retry_time = 5
+    retry_count = 0
     while not STOP_EVENT.is_set():
         try:
             now = time.time()
@@ -39,6 +41,12 @@ async def main():
             break
         except PrometheusException as exc:
             logger.error(exc)
+
+            retry_count += 1
+            if retry_count > 5:
+                logger.critical(f"Unable to initialize, aborting!")
+                return 1
+
             logger.error(f"Retrying in {retry_time} seconds...")
             await asyncio.sleep(retry_time)
             retry_time += 5
@@ -61,7 +69,10 @@ async def main():
         wait_time = REFRESH_INTERVAL - overshot
         time_target += REFRESH_INTERVAL
 
+    return 0
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     res = loop.run_until_complete(main())
+    sys.exit(res)
