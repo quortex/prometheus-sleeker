@@ -35,7 +35,7 @@ class Metrics:
         filtering_str = ""
         if self.filtering:
             filtering_str = "{" + self.filtering + "}"
-        return f"{self.aggregation_operation} by ({by_clause})({self.input}{filtering_str})"
+        return f"{self.aggregation_operation} by ({by_clause})(max without (prometheus_replica)({self.input}{filtering_str}))"
 
     def get_liveness_query(self, ttl: str):
         """
