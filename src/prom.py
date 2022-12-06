@@ -16,10 +16,10 @@ class PrometheusException(Exception):
 logger = logging.getLogger(__name__)
 
 
-async def fetch(query: str,) -> dict:
+async def fetch(query: str, timeout=20.0) -> dict:
     url = PROM_URL + query
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             reply = await client.get(url)
     except httpx.RequestError as exc:
         raise PrometheusException(

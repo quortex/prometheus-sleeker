@@ -58,13 +58,13 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         recatch_dots_by_key[key] = last_dot
 
     # Fine tuned query to compute input increments
-
+    # Prometheus needs some time to process this complex query, so we use a longer timeout
     query = (
         "query_range?query="
         + metric.get_query()
         + f"&start={start}&end={timestamp}&step=15s"
     )
-    data = await prom.fetch(query)
+    data = await prom.fetch(query, timeout=40.0)
 
     for element in data:
         labels = element["metric"]
