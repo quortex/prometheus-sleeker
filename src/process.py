@@ -40,7 +40,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         + metric.get_recatch_query()
         + f"&start={start}&end={timestamp}&step=15s"
     )
-    data = await prom.fetch(query)
+    data = await prom.fetch(query, timeout=40.0)
 
     # Store the values and timestamp of the output metrics
     recatch_dots_by_key = {}
@@ -64,7 +64,7 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         + metric.get_query()
         + f"&start={start}&end={timestamp}&step=15s"
     )
-    data = await prom.fetch(query, timeout=40.0)
+    data = await prom.fetch(query, timeout=80.0)
 
     for element in data:
         labels = element["metric"]
@@ -73,7 +73,6 @@ async def load_metric(metric: Metrics, timestamp, options: Options):
         values = element["values"]
 
         if key in recatch_dots_by_key:
-
             # Store the last seen input counter
             metric.previous_values_by_key[key] = float(values[-1][1])
 
