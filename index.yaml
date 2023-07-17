@@ -3,6 +3,16 @@ entries:
   prometheus-sleeker:
   - apiVersion: v2
     appVersion: 0.1.9
+    created: "2023-07-17T14:22:49.432603064Z"
+    description: Prometheus sleeker helm chart.
+    digest: 1f5fa79f0929ccb02c00a8fa05536cd62f5271d9200305bd8488f8f0abea8f76
+    name: prometheus-sleeker
+    type: application
+    urls:
+    - https://github.com/quortex/prometheus-sleeker/releases/download/prometheus-sleeker-chart-0.1.19/prometheus-sleeker-0.1.19.tgz
+    version: 0.1.19
+  - apiVersion: v2
+    appVersion: 0.1.9
     created: "2023-07-17T13:52:13.177315346Z"
     description: Prometheus sleeker helm chart.
     digest: 4c4983a0b1a8514dfc1fc741c9d4b683be924a0098b97a346aa533af6089ba52
@@ -181,4 +191,4 @@ entries:
     urls:
     - https://github.com/quortex/prometheus-sleeker/releases/download/prometheus-sleeker-chart-0.1.0/prometheus-sleeker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-07-17T13:52:13.177448049Z"
+generated: "2023-07-17T14:22:49.433152997Z"
