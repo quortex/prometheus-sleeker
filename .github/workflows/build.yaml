@@ -47,6 +47,10 @@ jobs:
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_POOL }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
 
+      #  Configure QEMU
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       #  Configure Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
