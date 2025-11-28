@@ -47,14 +47,16 @@ jobs:
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_POOL }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
 
-      # Build docker image
-      - name: Build
-        run: |-
-          docker buildx build --platform linux/amd64,linux/arm64 -t eu.gcr.io/${{ env.GCP_PROJECT_ID }}/$IMAGE_NAME:$IMAGE_TAG .
-      # Configure docker to use the gcloud command-line tool as a credential helper
-      - run: |
+      #  Configure Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Authentification GCR
+      - name: Configure Docker to use gcloud
+        run: |
           gcloud auth configure-docker -q
-      # Push image to Google Container Registry
-      - name: Push
+
+      # Build et push multi-arch
+      - name: Build and Push multi-arch image
         run: |-
-          docker push eu.gcr.io/${{ env.GCP_PROJECT_ID }}/$IMAGE_NAME:$IMAGE_TAG
+          docker buildx build --platform linux/amd64,linux/arm64 -t eu.gcr.io/${{ env.GCP_PROJECT_ID }}/$IMAGE_NAME:$IMAGE_TAG --push .
