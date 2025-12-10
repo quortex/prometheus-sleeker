@@ -28,7 +28,7 @@ async def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     config = configure()
-    start_http_server(port=METRIC_PORT)
+    start_http_server(port=METRIC_PORT, addr="::")
 
     process = Process(config)
 
