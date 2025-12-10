@@ -20,7 +20,7 @@ idna==3.1
     # via rfc3986
 immutables==0.15
     # via contextvars
-prometheus-client==0.10.1
+prometheus-client==0.23.1
     # via -r requirements/prod.in
 python-decouple==3.4
     # via -r requirements/prod.in
