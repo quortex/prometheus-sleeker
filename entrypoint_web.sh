@@ -7,7 +7,7 @@ sigterm_signal() {
 
 trap sigterm_signal SIGTERM
 
-python -m src.main &
+python -m src.main "$@" &
 
 child=$!
 wait "$child"
