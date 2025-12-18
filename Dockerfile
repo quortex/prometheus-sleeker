@@ -15,7 +15,8 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 ENV PYTHONPATH "${PYTHONPATH}:/code"
 COPY src /code/src
+COPY entrypoint_web.sh /code/entrypoint_web.sh
 
-ENTRYPOINT [ "python", "-m", "src.main" ]
+ENTRYPOINT ["bash", "entrypoint_web.sh"]
 
 EXPOSE 6200
